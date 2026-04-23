@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STRATEGIELAB · NETZWERKEFFEKTE</title>
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Syne:wght@400;600;700;800&family=Nunito:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060c1a;--bg2:#0d1528;--bg3:#141e35;
+  --gl:rgba(255,255,255,.04);--glh:rgba(255,255,255,.07);
+  --bo:rgba(255,255,255,.08);--boh:rgba(255,255,255,.14);
+  --c1:#3ef5c0;--c1d:rgba(62,245,192,.12);--c1b:rgba(62,245,192,.25);
+  --c2:#ff6b35;--c2d:rgba(255,107,53,.12);--c2b:rgba(255,107,53,.25);
+  --c3:#9b6dff;--c3d:rgba(155,109,255,.12);--c3b:rgba(155,109,255,.25);
+  --c4:#ffc93a;--c4d:rgba(255,201,58,.12);--c4b:rgba(255,201,58,.25);
+  --c5:#4ade80;--c5d:rgba(74,222,128,.12);
+  --tx:#dde6f5;--txd:#6e82a0;--txm:#99afc8;
+  --fd:'Russo One',sans-serif;--fh:'Syne',sans-serif;--fb:'Nunito',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--tx);font-family:var(--fb);min-height:100vh;overflow-x:hidden;}
+#bgc{position:fixed;inset:0;opacity:.11;pointer-events:none;z-index:0;}
+
+/* LAYOUT */
+.app{position:relative;z-index:1;display:grid;grid-template-rows:60px 1fr;grid-template-columns:270px 1fr;grid-template-areas:"hd hd""sb mn";min-height:100vh;}
+
+/* HEADER */
+header{grid-area:hd;background:rgba(6,12,26,.97);border-bottom:1px solid var(--bo);display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:300;backdrop-filter:blur(20px);}
+.hbrand{font-family:var(--fd);font-size:11px;letter-spacing:3px;color:var(--c1);display:flex;align-items:center;gap:10px;}
+.hdot{width:7px;height:7px;border-radius:50%;background:var(--c1);box-shadow:0 0 10px var(--c1);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.htimer{font-family:var(--fm);font-size:22px;font-weight:700;color:var(--c4);letter-spacing:2px;cursor:pointer;user-select:none;}
+.htimer:hover{opacity:.7;}
+.hphase{font-family:var(--fm);font-size:10px;color:var(--txd);text-align:right;line-height:1.6;}
+.hphase em{color:var(--c1);font-style:normal;}
+.hsave{display:flex;gap:8px;}
+.hsavebtn{font-family:var(--fm);font-size:9px;letter-spacing:1px;padding:6px 12px;border-radius:20px;border:1px solid var(--bo);background:transparent;color:var(--txd);cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;}
+.hsavebtn:hover{border-color:var(--c1);color:var(--c1);}
+.hsavebtn.hi{border-color:var(--c1b);background:var(--c1d);color:var(--c1);}
+
+/* SIDEBAR */
+aside{grid-area:sb;background:rgba(13,21,40,.8);border-right:1px solid var(--bo);padding:18px 0 40px;overflow-y:auto;backdrop-filter:blur(10px);}
+.sblbl{font-family:var(--fm);font-size:9px;letter-spacing:2.5px;color:var(--txd);padding:0 18px 12px;text-transform:uppercase;}
+.phi{display:flex;align-items:flex-start;gap:10px;padding:11px 18px;cursor:pointer;transition:.2s;border-left:2px solid transparent;position:relative;}
+.phi:hover{background:var(--glh);}
+.phi.active{background:var(--c1d);border-left-color:var(--c1);}
+.phi.done .phn{background:var(--c1);color:var(--bg);border-color:var(--c1);}
+.phi.done::after{content:'✓';position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--c1);font-size:10px;font-family:var(--fm);}
+.phname{font-family:var(--fh);font-size:12px;font-weight:600;color:var(--txm);line-height:1.3;}width:25px;height:25px;border-radius:50%;border:1px solid var(--bo);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:10px;flex-shrink:0;color:var(--txd);transition:.2s;}
+.phi.active .phn{border-color:var(--c1);color:var(--c1);box-shadow:0 0 10px rgba(62,245,192,.2);}
+.phname{font-family:var(--fh);font-size:12px;font-weight:600;color:var(--txm);line-height:1.3;}
+.phi.active .phname{color:var(--c1);}
+.phtime{font-family:var(--fm);font-size:9px;color:var(--txd);margin-top:2px;}
+.phline{width:1px;height:14px;background:var(--bo);margin:0 0 0 31px;}
+.sb-prog{padding:16px 18px 0;}
+.sb-prog-lbl{font-family:var(--fm);font-size:9px;color:var(--txd);margin-bottom:6px;display:flex;justify-content:space-between;}
+.sb-pbar{background:rgba(0,0,0,.3);border-radius:3px;height:3px;}
+.sb-pfill{height:100%;background:linear-gradient(90deg,var(--c1),var(--c3));border-radius:3px;transition:width .5s;}
+
+/* MAIN */
+main{grid-area:mn;overflow-y:auto;padding:36px 44px 90px;max-width:860px;}
+.pc{display:none;animation:fu .35s ease;}
+.pc.active{display:block;}
+@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* TYPOGRAPHY */
+.pbadge{font-family:var(--fm);font-size:9px;letter-spacing:2.5px;color:var(--c1);background:var(--c1d);border:1px solid var(--c1b);padding:4px 12px;border-radius:20px;display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;}
+.pbadge-t{font-family:var(--fm);font-size:9px;letter-spacing:2.5px;color:var(--c4);background:var(--c4d);border:1px solid var(--c4b);padding:4px 12px;border-radius:20px;display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;}
+.ptitle{font-family:var(--fh);font-size:30px;font-weight:800;line-height:1.1;margin-bottom:10px;}
+.psub{font-size:13.5px;color:var(--txd);line-height:1.75;max-width:680px;margin-bottom:28px;}
+h3{font-family:var(--fh);font-size:15px;font-weight:700;margin-bottom:9px;}
+h4{font-family:var(--fm);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--txd);margin-bottom:8px;}
+p{font-size:13px;line-height:1.8;color:var(--txd);margin-bottom:9px;}
+p:last-child{margin:0;}
+strong{color:var(--tx);font-weight:600;}
+ul.ul{list-style:none;}
+ul.ul li{position:relative;padding-left:16px;margin-bottom:7px;font-size:13px;line-height:1.65;color:var(--txd);}
+ul.ul li::before{content:'›';position:absolute;left:0;color:var(--c1);font-weight:700;}
+
+/* CARDS */
+.card{background:var(--gl);border:1px solid var(--bo);border-radius:14px;padding:24px;margin-bottom:16px;transition:.25s;}
+.card:hover{background:var(--glh);border-color:var(--boh);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+
+/* FLIP CARDS */
+.fc{perspective:1000px;height:210px;cursor:pointer;}
+.fci{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;}
+.fc:hover .fci,.fc.flip .fci{transform:rotateY(180deg);}
+.fcf,.fcb{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:20px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid var(--bo);}
+.fcf{background:var(--gl);}
+.fcb{background:var(--bg3);transform:rotateY(180deg);}
+.fc-ico{font-size:26px;margin-bottom:6px;}
+.fc-tit{font-family:var(--fh);font-size:15px;font-weight:700;}
+.fc-hint{font-family:var(--fm);font-size:8px;letter-spacing:1px;opacity:.4;text-transform:uppercase;}
+.fc-btit{font-family:var(--fh);font-size:13px;font-weight:700;margin-bottom:8px;}
+.fc-bdesc{font-size:11.5px;line-height:1.6;color:var(--txm);}
+.fc-tags{margin-top:10px;display:flex;flex-wrap:wrap;gap:4px;}
+.ac1 .fcf{border-color:rgba(62,245,192,.25);}  .ac1 .fc-tit{color:var(--c1);}
+.ac2 .fcf{border-color:rgba(255,107,53,.25);}  .ac2 .fc-tit{color:var(--c2);}
+.ac3 .fcf{border-color:rgba(155,109,255,.25);} .ac3 .fc-tit{color:var(--c3);}
+.ac4 .fcf{border-color:rgba(255,201,58,.25);}  .ac4 .fc-tit{color:var(--c4);}
+
+/* TAGS */
+.tag{font-family:var(--fm);font-size:9px;padding:2px 8px;border-radius:20px;border:1px solid;display:inline-block;}
+.t1{color:var(--c1);border-color:var(--c1b);background:var(--c1d);}
+.t2{color:var(--c2);border-color:var(--c2b);background:var(--c2d);}
+.t3{color:var(--c3);border-color:var(--c3b);background:var(--c3d);}
+.t4{color:var(--c4);border-color:var(--c4b);background:var(--c4d);}
+
+/* ALERTS */
+.alert{border-radius:10px;padding:14px 18px;margin-bottom:14px;border-left:2px solid;font-size:13px;line-height:1.65;}
+.al1{background:var(--c1d);border-color:var(--c1);}
+.al2{background:var(--c2d);border-color:var(--c2);}
+.al3{background:var(--c3d);border-color:var(--c3);}
+.al4{background:var(--c4d);border-color:var(--c4);}
+.al-lbl{font-family:var(--fm);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+.al1 .al-lbl{color:var(--c1)} .al2 .al-lbl{color:var(--c2)} .al3 .al-lbl{color:var(--c3)} .al4 .al-lbl{color:var(--c4)}
+
+/* KEY MESSAGE */
+.km{background:var(--bg3);border:1px solid var(--bo);border-radius:14px;padding:24px;text-align:center;margin:20px 0;}
+.km p{font-family:var(--fh);font-size:18px;font-weight:700;line-height:1.5;}
+.km span{color:var(--c1);}
+
+/* DIVIDER */
+.div{height:1px;background:var(--bo);margin:28px 0;}
+
+/* SECTION LABEL */
+.slbl{font-family:var(--fm);font-size:9px;letter-spacing:3px;color:var(--txd);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.slbl::after{content:'';flex:1;height:1px;background:var(--bo);}
+.fw-badge{font-family:var(--fd);font-size:10px;color:var(--c4);background:var(--c4d);border:1px solid var(--c4b);padding:2px 9px;border-radius:20px;letter-spacing:1px;flex-shrink:0;}
+
+/* MISSION HERO */
+.mhero{padding:44px 0 36px;text-align:center;}
+.mlbl{font-family:var(--fm);font-size:10px;letter-spacing:4px;color:var(--c1);text-transform:uppercase;margin-bottom:18px;}
+.mtit{font-family:var(--fd);font-size:clamp(30px,4.5vw,56px);line-height:1.0;margin-bottom:16px;background:linear-gradient(130deg,#fff 20%,var(--c1) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.msub{font-family:var(--fh);font-size:15px;color:var(--txd);max-width:540px;margin:0 auto 32px;line-height:1.65;}
+.mstats{display:flex;justify-content:center;gap:48px;margin-bottom:36px;}
+.ms-v{font-family:var(--fd);font-size:32px;color:var(--c1);}
+.ms-l{font-family:var(--fm);font-size:9px;color:var(--txd);letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+
+/* PROGRESS BAR */
+.prog-wrap{background:var(--gl);border:1px solid var(--bo);border-radius:10px;padding:14px 18px;margin-bottom:20px;}
+.prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.prog-lbl{font-family:var(--fm);font-size:10px;color:var(--txd);}
+.prog-val{font-family:var(--fm);font-size:12px;font-weight:700;color:var(--c1);}
+.pbar{background:rgba(0,0,0,.3);border-radius:3px;height:4px;overflow:hidden;}
+.pfill{height:100%;background:linear-gradient(90deg,var(--c1),var(--c3));border-radius:3px;transition:width .4s ease;}
+
+/* CASE CARDS */
+.cc{background:var(--gl);border:1px solid var(--bo);border-radius:14px;overflow:hidden;cursor:pointer;transition:.3s;margin-bottom:14px;}
+.cc:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(0,0,0,.35);}
+.cc.sel{border-color:var(--c1);box-shadow:0 0 22px rgba(62,245,192,.12);}
+.cchd{padding:18px 22px 12px;display:flex;align-items:center;gap:14px;}
+.cclet{font-family:var(--fd);font-size:42px;line-height:1;color:var(--c1);opacity:.22;transition:.25s;flex-shrink:0;}
+.cc.sel .cclet{opacity:1;}
+.ccname{font-family:var(--fh);font-size:15px;font-weight:700;}
+.cctype{font-family:var(--fm);font-size:9px;color:var(--txd);margin-top:3px;letter-spacing:.5px;}
+.ccbody{padding:0 22px 14px;font-size:13px;line-height:1.7;color:var(--txd);}
+.cc-qs{display:none;padding:16px 22px 18px;background:rgba(0,0,0,.18);border-top:1px solid var(--bo);}
+.cc.sel .cc-qs{display:block;}
+.ql{list-style:none;}
+.qi{display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.55;margin-bottom:8px;}
+.qc{width:15px;height:15px;border-radius:3px;border:1px solid var(--bo);background:transparent;cursor:pointer;flex-shrink:0;margin-top:2px;appearance:none;transition:.2s;}
+.qc:checked{background:var(--c1);border-color:var(--c1);}
+.qc:checked+span{text-decoration:line-through;opacity:.4;}
+
+/* THESE BOXES */
+.these-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}
+.these{border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.6;}
+.these-bull{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.25);}
+.these-bear{background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.25);}
+.these-lbl{font-family:var(--fm);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;}
+.these-bull .these-lbl{color:var(--c5);}
+.these-bear .these-lbl{color:var(--c2);}
+
+/* CANVAS FIELDS */
+.cf{background:var(--gl);border:1px solid var(--bo);border-radius:12px;padding:18px;transition:.2s;margin-bottom:12px;}
+.cf:focus-within{border-color:var(--c1b);background:var(--glh);box-shadow:0 0 16px rgba(62,245,192,.07);}
+.cfhd{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.cfnum{width:22px;height:22px;border-radius:50%;background:var(--c1d);border:1px solid var(--c1b);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:10px;color:var(--c1);flex-shrink:0;}
+.cftit{font-family:var(--fh);font-size:14px;font-weight:700;}
+.cfsub{font-size:11.5px;color:var(--txd);margin-bottom:9px;line-height:1.55;}
+textarea{width:100%;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.06);border-radius:8px;color:var(--tx);font-family:var(--fb);font-size:13px;padding:10px 12px;resize:vertical;min-height:72px;outline:none;transition:border-color .2s;}
+textarea:focus{border-color:rgba(62,245,192,.28);}
+textarea::placeholder{color:rgba(110,130,160,.45);}
+input[type=text]{width:100%;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.06);border-radius:8px;color:var(--tx);font-family:var(--fb);font-size:13px;padding:9px 12px;outline:none;transition:border-color .2s;}
+input[type=text]:focus{border-color:rgba(62,245,192,.28);}
+input[type=text]::placeholder{color:rgba(110,130,160,.45);}
+
+/* TYPE BUTTONS */
+.typs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.tybtn{font-family:var(--fm);font-size:9px;letter-spacing:.5px;padding:5px 11px;border-radius:20px;border:1px solid var(--bo);background:transparent;color:var(--txd);cursor:pointer;transition:.2s;}
+.tybtn:hover{border-color:var(--c1);color:var(--c1);}
+.tybtn.on{background:var(--c1);border-color:var(--c1);color:var(--bg);font-weight:700;}
+
+/* SLIDERS */
+.srow{display:flex;align-items:center;gap:10px;margin-top:8px;}
+.slbl2{font-family:var(--fm);font-size:9px;color:var(--txd);width:100px;flex-shrink:0;}
+input[type=range]{flex:1;-webkit-appearance:none;height:3px;background:var(--bo);border-radius:2px;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--c1);box-shadow:0 0 6px rgba(62,245,192,.35);}
+.sval{font-family:var(--fm);font-size:12px;font-weight:700;color:var(--c1);width:20px;text-align:right;}
+
+/* PITCH STEPS */
+.pstep{display:flex;align-items:flex-start;gap:14px;background:var(--gl);border:1px solid var(--bo);border-radius:12px;padding:16px;margin-bottom:9px;cursor:pointer;transition:.25s;user-select:none;}
+.pstep:hover{background:var(--glh);}
+.pstep.done{border-color:rgba(62,245,192,.3);background:var(--c1d);}
+.pstep-n{width:32px;height:32px;border-radius:50%;border:2px solid var(--bo);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:12px;color:var(--txd);flex-shrink:0;transition:.2s;}
+.pstep.done .pstep-n{border-color:var(--c1);color:var(--c1);}
+.pstep-tit{font-family:var(--fh);font-size:14px;font-weight:700;margin-bottom:3px;}
+.pstep.done .pstep-tit{color:var(--c1);}
+.pstep-desc{font-size:12px;color:var(--txd);line-height:1.55;}
+
+/* VERDICT BUTTONS */
+.vbtns{display:flex;gap:12px;margin-top:18px;}
+.vbtn{flex:1;padding:16px;border-radius:14px;border:2px solid var(--bo);background:transparent;cursor:pointer;transition:.25s;text-align:center;font-family:var(--fh);font-size:15px;font-weight:800;color:var(--txd);}
+.vbtn:hover{transform:translateY(-2px);}
+.vja:hover,.vja.on{border-color:var(--c5);background:var(--c5d);color:var(--c5);box-shadow:0 0 20px rgba(74,222,128,.14);}
+.vbe:hover,.vbe.on{border-color:var(--c4);background:var(--c4d);color:var(--c4);box-shadow:0 0 20px rgba(255,201,58,.14);}
+.vne:hover,.vne.on{border-color:var(--c2);background:var(--c2d);color:var(--c2);box-shadow:0 0 20px rgba(255,107,53,.14);}
+.v-ico{font-size:24px;display:block;margin-bottom:5px;}
+.v-sub{font-size:10px;font-weight:400;color:var(--txd);font-family:var(--fb);margin-top:2px;}
+
+/* PITCH COUNTDOWN */
+.pcount{background:var(--bg3);border:1px solid var(--bo);border-radius:14px;padding:28px;text-align:center;margin-bottom:24px;}
+.pcount-num{font-family:var(--fd);font-size:72px;color:var(--c1);letter-spacing:4px;line-height:1;transition:.3s;}
+.pcount-num.warn{color:var(--c2);}
+.pcount-lbl{font-family:var(--fm);font-size:10px;color:var(--txd);letter-spacing:2px;margin-top:8px;}
+.pcount-btns{display:flex;gap:10px;justify-content:center;margin-top:18px;}
+.pcbtn{font-family:var(--fh);font-size:13px;font-weight:700;padding:10px 22px;border-radius:10px;border:1px solid var(--bo);background:transparent;color:var(--tx);cursor:pointer;transition:.2s;}
+.pcbtn:hover{background:var(--glh);}
+.pcbtn.primary{background:var(--c1);color:var(--bg);border-color:var(--c1);}
+
+/* DEBRIEF */
+.dq{background:var(--gl);border:1px solid var(--bo);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+.dqhd{padding:16px 22px;display:flex;align-items:center;gap:14px;}
+.dqn{font-family:var(--fd);font-size:26px;color:var(--c1);opacity:.4;line-height:1;flex-shrink:0;}
+.dqq{font-family:var(--fh);font-size:14px;font-weight:600;line-height:1.4;}
+.dqin{padding:0 22px 20px;}
+
+/* LITERATURE */
+.lit{border-bottom:1px solid var(--bo);padding-bottom:16px;margin-bottom:16px;}
+.lit:last-child{border:none;margin:0;padding:0;}
+.lit-txt{font-family:var(--fm);font-size:11px;line-height:1.85;color:var(--txd);}
+.lit-txt strong{color:var(--tx);}
+
+/* PRÜFFRAGEN */
+.pfg{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:9px;margin:14px 0;}
+.pfc{background:rgba(0,0,0,.18);border-radius:8px;padding:12px;border:1px solid var(--bo);}
+.pfn{font-family:var(--fm);font-size:8px;color:var(--c1);letter-spacing:1.5px;margin-bottom:5px;text-transform:uppercase;}
+.pft{font-size:12px;line-height:1.55;}
+
+/* NAV */
+.navbtns{display:flex;justify-content:space-between;margin-top:44px;padding-top:26px;border-top:1px solid var(--bo);}
+.btn{font-family:var(--fh);font-size:13px;font-weight:700;padding:11px 22px;border-radius:10px;border:none;cursor:pointer;transition:.2s;letter-spacing:.2px;}
+.btnp{background:var(--c1);color:var(--bg);}
+.btnp:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(62,245,192,.3);}
+.btns{background:var(--gl);color:var(--tx);border:1px solid var(--bo);}
+.btns:hover{background:var(--glh);}
+
+/* GLOBAL PROGRESS */
+.gp{position:fixed;bottom:0;left:270px;right:0;height:2px;background:var(--bo);z-index:100;}
+.gpf{height:100%;background:linear-gradient(90deg,var(--c1),var(--c3));transition:width .5s ease;}
+
+/* KI HINT */
+.ki-hint{background:var(--c3d);border:1px solid var(--c3b);border-radius:10px;padding:12px 16px;font-size:12px;line-height:1.6;display:flex;gap:10px;align-items:flex-start;margin-top:12px;}
+.ki-ico{font-size:16px;flex-shrink:0;margin-top:1px;}
+
+/* ═════════ PITCH OVERLAY ═════════ */
+#pitchOverlay{display:none;position:fixed;inset:0;z-index:1000;background:#060c1a;overflow-y:auto;animation:fuFull .4s ease;}
+#pitchOverlay.active{display:block;}
+@keyframes fuFull{from{opacity:0}to{opacity:1}}
+.po-inner{min-height:100vh;padding:50px;display:flex;flex-direction:column;}
+.po-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px;}
+.po-brand{font-family:var(--fd);font-size:10px;letter-spacing:3px;color:var(--c1);}
+.po-team{font-family:var(--fm);font-size:11px;color:var(--txd);text-align:right;}
+.po-team strong{color:var(--tx);display:block;font-size:14px;margin-bottom:2px;}
+.po-case{margin-bottom:32px;}
+.po-case-lbl{font-family:var(--fm);font-size:9px;letter-spacing:3px;color:var(--txd);text-transform:uppercase;margin-bottom:8px;}
+.po-case-name{font-family:var(--fd);font-size:clamp(28px,5vw,52px);line-height:1;color:#fff;margin-bottom:14px;}
+.po-types{display:flex;gap:8px;flex-wrap:wrap;}
+.po-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;flex:1;}
+.po-field{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;}
+.po-field-n{font-family:var(--fm);font-size:8px;letter-spacing:2px;color:var(--c1);text-transform:uppercase;margin-bottom:6px;}
+.po-field-tit{font-family:var(--fh);font-size:12px;font-weight:700;color:var(--txm);margin-bottom:6px;}
+.po-field-val{font-size:12px;line-height:1.6;color:var(--txd);}
+.po-field.wide{grid-column:span 3;}
+.po-field.danger{border-color:rgba(255,107,53,.25);background:rgba(255,107,53,.05);}
+.po-field.purple{border-color:rgba(155,109,255,.25);background:rgba(155,109,255,.05);}
+.po-verdict{margin-top:20px;display:flex;align-items:center;gap:20px;padding:20px 28px;border-radius:14px;border:2px solid var(--bo);}
+.po-verdict.v-yes{border-color:var(--c5);background:rgba(74,222,128,.07);}
+.po-verdict.v-cond{border-color:var(--c4);background:rgba(255,201,58,.07);}
+.po-verdict.v-no{border-color:var(--c2);background:rgba(255,107,53,.07);}
+.po-verdict-lbl{font-family:var(--fm);font-size:9px;letter-spacing:3px;color:var(--txd);text-transform:uppercase;margin-bottom:4px;}
+.po-verdict-val{font-family:var(--fd);font-size:28px;}
+.po-verdict.v-yes .po-verdict-val{color:var(--c5);}
+.po-verdict.v-cond .po-verdict-val{color:var(--c4);}
+.po-verdict.v-no .po-verdict-val{color:var(--c2);}
+.po-verdict-reason{font-size:13px;line-height:1.6;color:var(--txm);flex:1;}
+.po-close{position:fixed;top:24px;right:28px;font-family:var(--fm);font-size:10px;letter-spacing:1.5px;padding:8px 16px;border-radius:20px;border:1px solid var(--bo);background:transparent;color:var(--txd);cursor:pointer;transition:.2s;z-index:10;}
+.po-close:hover{border-color:var(--c1);color:var(--c1);}
+.po-empty{font-family:var(--fm);font-size:11px;color:rgba(110,130,160,.35);font-style:italic;}
+
+/* COMPLETE */
+.complete{text-align:center;padding:56px 40px 36px;}
+.co-ico{font-size:60px;display:block;margin-bottom:16px;}
+.co-tit{font-family:var(--fd);font-size:26px;color:var(--c1);margin-bottom:9px;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bo);border-radius:2px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(62,245,192,.18);}
+</style>
+</head>
+<body>
+<canvas id="bgc"></canvas>
+
+<!-- ═══════════ PITCH OVERLAY ═══════════ -->
+<div id="pitchOverlay">
+  <button class="po-close" onclick="closePitch()">✕ SCHLIESSEN</button>
+  <div class="po-inner">
+    <div class="po-hd">
+      <div class="po-brand">STRATEGIELAB · NETZWERKEFFEKTE · Prof. Thomas Petzold Ph.D.</div>
+      <div class="po-team"><strong id="po-teamname">Team</strong><span id="po-datum"></span></div>
+    </div>
+    <div class="po-case">
+      <div class="po-case-lbl">Analysierter Fall</div>
+      <div class="po-case-name" id="po-casename">—</div>
+      <div class="po-types" id="po-types"></div>
+    </div>
+    <div class="po-grid" id="po-grid"></div>
+    <div class="po-verdict" id="po-verdict">
+      <div>
+        <div class="po-verdict-lbl">Investment-Urteil</div>
+        <div class="po-verdict-val" id="po-v-val">—</div>
+      </div>
+      <div class="po-verdict-reason" id="po-v-reason">Keine Begründung eingetragen.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ HAUPTAPP ═══════════ -->
+<div class="app">
+<header>
+  <div class="hbrand"><div class="hdot"></div>STRATEGIELAB · NETZWERKEFFEKTE</div>
+  <div class="hsave">
+    <input type="file" id="loadFile" accept=".json" style="display:none" onchange="loadData(this)">
+    <button class="hsavebtn" onclick="document.getElementById('loadFile').click()">📂 Laden</button>
+    <button class="hsavebtn" onclick="saveData()">💾 Speichern</button>
+    <button class="hsavebtn hi" onclick="openPitch()">🎯 Pitch anzeigen</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:20px;">
+    <div class="htimer" title="Klicken zum Zurücksetzen" id="mainTimer" onclick="resetTimer()">00:00</div>
+    <div class="hphase" id="hphase">PHASE 1 VON 8<br><em>MISSION BRIEFING</em></div>
+  </div>
+</header>
+
+<aside>
+  <div class="sblbl">Workshop-Phasen</div>
+
+  <div class="phi active" id="sbph-0" onclick="gp(0)">
+    <div class="phn">1</div>
+    <div><div class="phname">Mission Briefing</div><div class="phtime">15 min · Einstieg</div></div>
+  </div>
+  <div class="phline"></div>
+  <div class="phi" id="sbph-1" onclick="gp(1)">
+    <div class="phn">2</div>
+    <div><div class="phname">Framework-Download</div><div class="phtime">20 min · Konzepte</div></div>
+  </div>
+  <div class="phline"></div>
+  <div class="phi" id="sbph-2" onclick="gp(2)">
+    <div class="phn">3</div>
+    <div><div class="phname">Fallauswahl</div><div class="phtime">10 min · Fallvergabe</div></div>
+  </div>
+  <div class="phline"></div>
+  <div class="phi" id="sbph-3" onclick="gp(3)">
+    <div class="phn">4</div>
+    <div><div class="phname">Strategischer Canvas</div><div class="phtime">40 min · Teamarbeit</div></div>
+  </div>
+  <div class="phline"></div>
+  <div class="phi" id="sbph-4" onclick="gp(4)">
+    <div class="phn">5</div>
+    <div><div class="phname">Pitch-Vorbereitung</div><div class="phtime">15 min · Struktur</div></div>
+  </div>
+  <div class="phline"></div>
+  <div class="phi" id="sbph-5" onclick="gp(5)">
+    <div class="phn">6</div>
+    <div><div class="phname">Pitch-Präsentationen</div><div class="phtime">25 min · Teams pitchen</div></div>
+  </div>
+  <div class="phline"></div>
+  <div class="phi" id="sbph-6" onclick="gp(6)">
+    <div class="phn">7</div>
+    <div><div class="phname">Debrief im Plenum</div><div class="phtime">20 min · Diskussion</div></div>
+  </div>
+  <div class="phline"></div>
+  <div class="phi" id="sbph-7" onclick="gp(7)">
+    <div class="phn">8</div>
+    <div><div class="phname">Literatur & Abschluss</div><div class="phtime">10 min</div></div>
+  </div>
+
+  <div class="sb-prog">
+    <div class="sb-prog-lbl"><span>Gesamtfortschritt</span><span id="sb-pct">0%</span></div>
+    <div class="sb-pbar"><div class="sb-pfill" id="sb-pfill" style="width:0%"></div></div>
+  </div>
+</aside>
+
+<main id="mn">
+
+<!-- ════════════ PHASE 0: MISSION BRIEFING ════════════ -->
+<div class="pc active" id="pc-0">
+  <div class="mhero">
+    <div class="mlbl">Strategielab Netzwerkeffekte</div>
+    <h1 class="mtit">Wann werden Netzwerkeffekte zu Wert — und wann kippen sie?</h1>
+    <p class="msub">Tragfähigkeit, Kuration, Monetarisierung und KI-bedingte Disintermediation</p>
+    <div class="mstats">
+      <div><div class="ms-v">3h</div><div class="ms-l">Workshop</div></div>
+      <div><div class="ms-v">4</div><div class="ms-l">Fälle</div></div>
+      <div><div class="ms-v">8</div><div class="ms-l">Canvas-Felder</div></div>
+      <div><div class="ms-v">1</div><div class="ms-l">Klares Urteil</div></div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="slbl">Anschluss an die vorhergehende Session</div>
+  <div class="card">
+    <h3>Von Struktur zu Wertabschöpfung</h3>
+    <p>Die vorhergehende Session hat gezeigt, dass Netzwerkstruktur <strong>Sichtbarkeit, Diffusion, Vertrauen und Verwundbarkeit</strong> prägt. Diese Session geht einen Schritt weiter: Wie werden aus Verbindungen <strong>ökonomischer Wert, Plattformmacht und Erlöslogik</strong> — und wodurch werden diese wieder angreifbar?</p>
+  </div>
+  <div class="km"><p>Nicht jede Vernetzung erzeugt Wert.<br><span>Nicht jeder Wert ist verteidigbar.</span></p></div>
+
+  <div class="slbl">Die Leitfrage</div>
+  <div class="alert al1">
+    <div class="al-lbl">Mission</div>
+    <strong>Welche Netzwerkmodelle sind tragfähig, monetarisierbar und unter KI-Bedingungen noch verteidigbar?</strong>
+    <p style="margin-top:6px">Wir analysieren reale Fälle aus Deutschland und Europa — nicht als Nutzer:innen, sondern als <strong>Strategieteams</strong>. Am Ende steht eine klare Empfehlung und ein Investment-Urteil.</p>
+  </div>
+
+  <div class="alert al4">
+    <div class="al-lbl">Hinweis</div>
+    Diese Session ist kein Theorieblock, sondern ein <strong>Diagnose- und Entscheidungsworkshop</strong>. Ihr könnt und sollt für eure Fallanalyse auch KI-Werkzeuge nutzen — mit kritischem Blick auf das, was ihr herausbekommt.
+  </div>
+
+  <div class="div"></div>
+  <div class="slbl">Ablauf heute</div>
+  <div class="g2">
+    <div class="card" style="border-color:rgba(62,245,192,.2)"><h4 style="color:var(--c1)">Erste Hälfte · ~90 min</h4><ul class="ul"><li>Einstieg & Leitfrage (15 min)</li><li>Framework-Download (20 min)</li><li>Fallauswahl & Thesen-Vergabe (10 min)</li><li>Strategischer Canvas mit KI-Unterstützung (40 min)</li><li>Pitch-Vorbereitung (15 min)</li></ul></div>
+    <div class="card" style="border-color:rgba(255,201,58,.2)"><h4 style="color:var(--c4)">Pause & zweite Hälfte · ~90 min</h4><ul class="ul"><li>Pause (20 min)</li><li>Pitch-Präsentationen aller Teams (25 min)</li><li>Debrief im Plenum (20 min)</li><li>Rückbindung an Literatur (10 min)</li><li>Puffer & Diskussion (15 min)</li></ul></div>
+  </div>
+
+  <div class="navbtns"><div></div><button class="btn btnp" onclick="gp(1)">Frameworks laden →</button></div>
+</div>
+
+<!-- ════════════ PHASE 1: FRAMEWORK-DOWNLOAD ════════════ -->
+<div class="pc" id="pc-1">
+  <div class="pbadge">PHASE 2 · 20 MIN</div>
+  <h2 class="ptitle">Framework-Download</h2>
+  <p class="psub">Vier konzeptuelle Werkzeuge für eure Diagnose. Karte umdrehen für Details — Klick oder Hover.</p>
+
+  <div class="slbl"><span class="fw-badge">FRAMEWORK I</span>Die vier Grundtypen von Netzwerkeffekten</div>
+  <div class="g4">
+    <div class="fc ac1" onclick="this.classList.toggle('flip')">
+      <div class="fci">
+        <div class="fcf ac1"><div><div class="fc-ico">🛒</div><div class="fc-tit">Marktplatz</div></div><div class="fc-hint">Umdrehen</div></div>
+        <div class="fcb"><div class="fc-btit" style="color:var(--c1)">Marktplatz</div><div class="fc-bdesc">Verbinden <strong>Nachfrage und Angebot</strong>. Wert entsteht durch Interaktion zwischen zwei Marktseiten. Kritisch: Liquidität und Fragmentierung beider Seiten.</div><div class="fc-tags"><span class="tag t1">Vinted</span><span class="tag t1">Lieferando</span></div></div>
+      </div>
+    </div>
+    <div class="fc ac2" onclick="this.classList.toggle('flip')">
+      <div class="fci">
+        <div class="fcf ac2"><div><div class="fc-ico">🔗</div><div class="fc-tit">Interaktionsnetzwerk</div></div><div class="fc-hint">Umdrehen</div></div>
+        <div class="fcb"><div class="fc-btit" style="color:var(--c2)">Interaktionsnetzwerk</div><div class="fc-bdesc">Verbinden <strong>Nutzer:innen direkt</strong> miteinander. Wert durch Kommunikation, soziale Verbindungen, Content-Austausch. Reichweite schlägt Einzelknoten.</div><div class="fc-tags"><span class="tag t2">LinkedIn</span><span class="tag t2">Campus-App</span></div></div>
+      </div>
+    </div>
+    <div class="fc ac3" onclick="this.classList.toggle('flip')">
+      <div class="fci">
+        <div class="fcf ac3"><div><div class="fc-ico">📊</div><div class="fc-tit">Datennetzwerk</div></div><div class="fc-hint">Umdrehen</div></div>
+        <div class="fcb"><div class="fc-btit" style="color:var(--c3)">Datennetzwerk</div><div class="fc-bdesc">Wird <strong>besser, je mehr Nutzungsdaten</strong> ins System zurückfließen. Jede Interaktion trainiert das Modell. Schwer zu kopieren — Daten lassen sich kaum portieren.</div><div class="fc-tags"><span class="tag t3">Google Maps</span><span class="tag t3">Waze</span></div></div>
+      </div>
+    </div>
+    <div class="fc ac4" onclick="this.classList.toggle('flip')">
+      <div class="fci">
+        <div class="fcf ac4"><div><div class="fc-ico">🏗️</div><div class="fc-tit">Plattform</div></div><div class="fc-hint">Umdrehen</div></div>
+        <div class="fcb"><div class="fc-btit" style="color:var(--c4)">Plattform</div><div class="fc-bdesc">Verbinden Nutzer:innen mit <strong>externen Entwicklern, Komplementoren</strong> oder Anbietern. Wert entsteht durch das Ökosystem. Verteidigbarkeit durch Wechselkosten.</div><div class="fc-tags"><span class="tag t4">App Store</span><span class="tag t4">Salesforce</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="alert al1" style="margin-top:4px">
+    <div class="al-lbl">Diskussionsfrage</div>
+    Ist LinkedIn eher Interaktionsnetzwerk, Plattform — oder beides? Was wäre der Unterschied für das Erlösmodell?
+  </div>
+
+  <div class="div"></div>
+  <div class="slbl"><span class="fw-badge">FRAMEWORK II</span>Tragfähigkeit (Viability)</div>
+  <div class="card">
+    <h3>Nicht Größe, sondern Fragmentierung und Liquidität</h3>
+    <p>Ein Netzwerk wird nicht tragfähig, nur weil viele Menschen „da" sind. Vor den eigentlichen Netzwerkeffekten steht die Frage, ob überhaupt <strong>kritische Masse bzw. Liquidität</strong> erreicht wird. Welche Kennzahlen dafür relevant sind, hängt von Phase und Netzwerktyp ab.</p>
+    <p>Für Netzwerk- und Marktplatz-Modelle ist außerdem entscheidend, ob die beteiligten Seiten <strong>hinreichend fragmentiert</strong> sind. Wenn eine Seite von wenigen dominanten Akteuren kontrolliert wird, wird das Modell schnell zum bloßen Distributionskanal statt zu einem skalierenden Netzwerk.</p>
+    <div class="km" style="margin:16px 0 0;padding:18px"><p style="font-size:15px">Tragfähigkeit = <span>genügend passende Aktivität</span> + genügend fragmentierte Seiten</p></div>
+  </div>
+
+  <div class="div"></div>
+  <div class="slbl"><span class="fw-badge">FRAMEWORK III</span>Negative Netzwerkeffekte</div>
+  <div class="card">
+    <div class="g2">
+      <div>
+        <h3 style="color:var(--c2)">Wachstum kann Qualität zerstören</h3>
+        <p>Netzwerke wachsen nicht nur in Richtung Wert — sie können auch kippen. Negative Netzwerkeffekte entstehen, wenn zusätzliche Teilnehmer:innen das Netzwerk <strong>weniger wertvoll</strong> machen.</p>
+        <p>Ein zentrales Beispiel ist <strong>„Netzwerkverschmutzung"</strong>: sinkendes Signal-Rausch-Verhältnis durch unkuratiertes Wachstum. Als Gegenmittel: gezielte <strong>Kurationsmechanismen</strong> statt bloßer Reichweitenlogik.</p>
+      </div>
+      <div>
+        <h4>Kurationsmechanismen</h4>
+        <ul class="ul">
+          <li>Qualitätssignale und Bewertungssysteme</li>
+          <li>Algorithmische Kuration statt reiner Reichweite</li>
+          <li>Zugangsbeschränkungen und Verifikation</li>
+          <li>Segmentierte Netzwerke statt Einheitslösung</li>
+          <li>Reputationskapital als Schranke</li>
+        </ul>
+      </div>
+    </div>
+    <div class="alert al2" style="margin-top:16px;margin-bottom:0">
+      <div class="al-lbl">Leitfrage für euren Fall</div>
+      Wo droht für euren Fall mehr Wachstum zu mehr Lärm, schlechteren Treffern oder sinkendem Vertrauen zu führen?
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="slbl"><span class="fw-badge">FRAMEWORK IV</span>Monetarisierung & Verteidigbarkeit</div>
+  <div class="card">
+    <h3>Nach Tragfähigkeit kommt nicht automatisch Gewinn</h3>
+    <p>Die strategische Frage lautet: <strong>Wie wird aus Netzwerknutzen ein belastbares Erlösmodell?</strong> Es wird argumentiert, dass sich zusätzliche Verteidigungs- und Skaleneffekte durch das <strong>Schichten</strong> (Layering) weiterer Teilnehmer- oder Verbindungsarten aufbauen lassen — also indem man weitere Netzwerktypen auf das bestehende Netzwerk aufbaut.</p>
+    <div class="pfg">
+      <div class="pfc"><div class="pfn">Prüffrage 1</div><div class="pft">Wo entsteht der größte <strong>wahrgenommene Wert</strong>?</div></div>
+      <div class="pfc"><div class="pfn">Prüffrage 2</div><div class="pft">Welche Seite ist <strong>preisempfindlicher</strong>?</div></div>
+      <div class="pfc"><div class="pfn">Prüffrage 3</div><div class="pft">Wo ist die Transaktions-<strong>komplexität</strong> hoch?</div></div>
+      <div class="pfc"><div class="pfn">Prüffrage 4</div><div class="pft">Was lässt sich <strong>standardisieren</strong> — was nicht?</div></div>
+      <div class="pfc"><div class="pfn">Prüffrage 5</div><div class="pft">Wo können weitere Netzwerkeffekte <strong>geschichtet</strong> werden?</div></div>
+    </div>
+    <div class="km" style="margin:12px 0 0;padding:16px"><p style="font-size:14px">Ein gutes Netzwerkmodell ist nicht nur nützlich, sondern auch <span>abschöpfbar und schwer kopierbar</span>.</p></div>
+  </div>
+
+  <div class="div"></div>
+  <div class="slbl">Aktuelle Zuspitzung 2026</div>
+  <div class="card" style="border-color:rgba(155,109,255,.3)">
+    <h3 style="color:var(--c3)">Neue Störung: Was passiert, wenn KI die Kundenschnittstelle übernimmt?</h3>
+    <p>Plattformen sind durch die Zentralität digitaler Schnittstellen groß geworden — und dieses Modell gerät unter Druck, wenn Nutzer:innen Entscheidungen zunehmend an <strong>KI-vermittelte Systeme</strong> delegieren. Dann geraten <strong>Sichtbarkeit, Entdeckung (Discovery), Schnittstellenkontrolle</strong> und damit auch Erlösströme unter Druck.</p>
+    <p style="font-size:11px;color:var(--txd)">Cui, van Esch &amp; Kietzmann (2026): <em>How AI Is Threatening Platforms' Revenue Streams.</em> Harvard Business Review.</p>
+    <div class="alert al3" style="margin:14px 0 0;margin-bottom:0">
+      <div class="al-lbl">Kontraintuitive Schlussfolgerung</div>
+      Netzwerkeffekte reichen künftig womöglich nicht mehr aus, wenn die <strong>Schnittstelle zum Kunden nicht mehr der Plattform selbst gehört</strong>.
+    </div>
+  </div>
+
+  <div class="navbtns"><button class="btn btns" onclick="gp(0)">← Zurück</button><button class="btn btnp" onclick="gp(2)">Fallauswahl →</button></div>
+</div>
+
+<!-- ════════════ PHASE 2: FALLAUSWAHL ════════════ -->
+<div class="pc" id="pc-2">
+  <div class="pbadge">PHASE 3 · 10 MIN</div>
+  <h2 class="ptitle">Fallauswahl</h2>
+  <p class="psub">Klickt auf eine Karte, um sie zu öffnen und die Analysefragen zu sehen. Euer Team wählt einen Fall — und positioniert sich von Anfang an mit einer These.</p>
+
+  <div class="alert al3">
+    <div class="al-lbl">Was bedeutet „unterschiedliche These"?</div>
+    <strong>Idealerweise arbeiten zwei Teams am selben Fall — aber mit entgegengesetzten Ausgangsthesen.</strong> Eine Gruppe übernimmt die <em style="color:var(--c5)">Investitionsthese</em> (das Modell hat starke, verteidigbare Netzwerkeffekte), die andere die <em style="color:var(--c2)">Skeptiker-These</em> (das Modell ist anfälliger als es scheint). Der Debrief zeigt dann, wer die besseren Argumente hat — und wo die Wahrheit liegt. Jeder Fall hat unten konkrete Thesen als Ausgangspunkt.
+  </div>
+
+  <!-- FALL A -->
+  <div class="cc" onclick="tc(this)">
+    <div class="cchd"><div class="cclet">A</div><div><div class="ccname">Vinted / Re-Commerce in Europa</div><div class="cctype">MARKTPLATZ · C2C · GRENZÜBERSCHREITEND</div></div></div>
+    <div class="ccbody">Europas führende Plattform für gebrauchte Mode. Millionen Nutzer:innen, hohe Transaktionsfrequenz, grenzüberschreitendes Wachstum — aber wie stark und verteidigbar sind die Netzwerkeffekte wirklich?</div>
+    <div class="cc-qs">
+      <div class="these-wrap">
+        <div class="these these-bull"><div class="these-lbl">✓ Investitionsthese</div>Vinted hat starke europaweite Netzwerkeffekte — die Datenmasse und das Vertrauen lassen sich nicht schnell kopieren. Das Modell wird mit jedem Käufer und Verkäufer besser.</div>
+        <div class="these these-bear"><div class="these-lbl">✗ Skeptiker-These</div>Niedrige Wechselkosten und fehlende Kuration machen Vinted angreifbar. Jeder Konkurrent kann den gleichen Marktplatz aufbauen — und KI übernimmt die Stil-Empfehlung.</div>
+      </div>
+      <h4 style="margin:12px 0 8px;color:var(--c1)">Analysefragen</h4>
+      <ul class="ql">
+        <li class="qi"><input type="checkbox" class="qc"><span>Wie entsteht Liquidität — lokal oder plattformweit? Gibt es kritische geografische Cluster?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>Wie wird Vertrauen in einem C2C-Marktplatz ohne professionelle Verkäufer:innen skaliert?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>Kategoriedichte: Sind Mode-Nischen fragmentiert oder „winner takes all"?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>Kuration vs. Volumen: Welche Qualitätssignale gibt es? Wo entstehen negative Netzwerkeffekte?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>KI-Test: Übernimmt KI Stilsuche und Preisfindung — braucht man dann noch den Feed?</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- FALL B -->
+  <div class="cc" onclick="tc(this)">
+    <div class="cchd"><div class="cclet">B</div><div><div class="ccname">Lieferando / Wolt / lokale Lieferdienste</div><div class="cctype">MARKTPLATZ · HYPERLOKAL · BETRIEBSINTENSIV</div></div></div>
+    <div class="ccbody">Lieferplattformen kämpfen um lokale Netzwerkeffekte — aber auch um Margen. Der Markt ist hochkonzentriert, die betriebliche Komplexität jedoch enorm.</div>
+    <div class="cc-qs">
+      <div class="these-wrap">
+        <div class="these these-bull"><div class="these-lbl">✓ Investitionsthese</div>Hyperlokale Netzwerkeffekte, Datennetzwerk-Schichten (Prognosemodelle, Routen) und operative Exzellenz schaffen einen Burggraben, der für neue Wettbewerber kaum zu überwinden ist.</div>
+        <div class="these these-bear"><div class="these-lbl">✗ Skeptiker-These</div>Restaurants diversifizieren auf allen Kanälen, die Kundentreue ist schwach, Margen kollabieren — das Modell wird zur reinen Infrastruktur ohne Preismacht.</div>
+      </div>
+      <h4 style="margin:12px 0 8px;color:var(--c1)">Analysefragen</h4>
+      <ul class="ql">
+        <li class="qi"><input type="checkbox" class="qc"><span>Wie lokal sind die Netzwerkeffekte? Helfen mehr Nutzer:innen in München einem Restaurant in Berlin?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>Dichte vs. Breite: Welcher Faktor entscheidet über Lieferzeit und Restaurantauswahl?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>Ist operative Exzellenz (Fahrersteuerung, Prognosemodelle) ein Netzwerkeffekt oder nur ein Kostenvorsprung?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>Asymmetrischer Wert: Wer braucht wen mehr — Restaurants oder Konsument:innen?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>KI-Test: Übernimmt ein KI-Agent die Essensbestellung — bleibt die Plattform relevant oder wird sie zur Infrastruktur?</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- FALL C -->
+  <div class="cc" onclick="tc(this)">
+    <div class="cchd"><div class="cclet">C</div><div><div class="ccname">LinkedIn im DACH-Arbeitsmarkt</div><div class="cctype">INTERAKTIONSNETZWERK · PLATTFORM · B2B</div></div></div>
+    <div class="ccbody">LinkedIn ist dominant, aber ist es wirklich ein starkes Netzwerk — oder eine Datenbank mit sozialer Maske? Und was passiert, wenn KI das Recruiting übernimmt?</div>
+    <div class="cc-qs">
+      <div class="these-wrap">
+        <div class="these these-bull"><div class="these-lbl">✓ Investitionsthese</div>Das größte berufliche Netzwerk der Welt hat unschlagbare Daten- und Interaktionsnetzwerkeffekte. Jede neue Verbindung macht das Netzwerk wertvoller — für alle Seiten.</div>
+        <div class="these these-bear"><div class="these-lbl">✗ Skeptiker-These</div>Sinkendes Signal-Rausch-Verhältnis, KI-generierter Spam und KI-gestützte Jobsuche machen den Feed obsolet und zerstören das Kern-Erlösmodell (Recruiter-Subscriptions).</div>
+      </div>
+      <h4 style="margin:12px 0 8px;color:var(--c1)">Analysefragen</h4>
+      <ul class="ql">
+        <li class="qi"><input type="checkbox" class="qc"><span>Netzwerktyp-Diagnose: Interaktionsnetzwerk (Kontakte, Feed) oder Plattform (Recruiter-Werkzeuge, Premium-APIs)?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>Signalqualität: Ist der LinkedIn-Feed kuriert oder verschmutzt? Was sind konkrete negative Netzwerkeffekte?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>Sichtbarkeit und Verteilungslogik: Wer sieht wen — und wer zahlt für Sichtbarkeit?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>Premium-Logik: Wofür zahlen Nutzer:innen — und wofür sollten sie eigentlich zahlen?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>KI-Test: Wenn ein Agent alle passenden Stellen findet und Bewerbungen verschickt — braucht man noch den Feed?</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- FALL D -->
+  <div class="cc" onclick="tc(this)">
+    <div class="cchd"><div class="cclet">D</div><div><div class="ccname">Campus-App / Hochschulnetzwerk</div><div class="cctype">INTERAKTIONSNETZWERK · HYPERLOKAL · INSTITUTIONELL</div></div></div>
+    <div class="ccbody">Ein Netzwerk, das an einem einzigen physischen Ort beginnt — und dort endet. Hohe Relevanz, aber strukturell hohe Abgangsrate durch Studienabschlüsse.</div>
+    <div class="cc-qs">
+      <div class="these-wrap">
+        <div class="these these-bull"><div class="these-lbl">✓ Investitionsthese</div>Hyperlokal + institutionell = perfekte Nische mit geringem Wettbewerb. Wer eine Hochschule durchdringt, hat einen natürlichen Burggraben — und skaliert von dort aus.</div>
+        <div class="these these-bear"><div class="these-lbl">✗ Skeptiker-These</div>Struktureller Abgangs-Churn durch Graduierung und begrenzte Skalierbarkeit machen das Modell nicht investierbar. Das Netzwerk muss sich alle 3–5 Jahre neu aufbauen.</div>
+      </div>
+      <h4 style="margin:12px 0 8px;color:var(--c1)">Analysefragen</h4>
+      <ul class="ql">
+        <li class="qi"><input type="checkbox" class="qc"><span>Kaltstart: Wie erreicht man kritische Masse auf einem Campus ohne bestehende Netzwerkeffekte?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>Bindung vs. Abgangs-Churn: Wie überbrückt man den permanenten Nutzerverlust durch Abschlüsse?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>Lokale vs. skalierbare Netzwerkeffekte: Was nützen Netzwerkeffekte, wenn das Netzwerk per Design begrenzt ist?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>Wiederkehrende Nutzung: Welche Nutzungsanlässe bringen Nutzer:innen täglich — und welche nur semesterweise?</span></li>
+        <li class="qi"><input type="checkbox" class="qc"><span>Institutionelle Einbettung: Macht eine Kooperation mit der Hochschule das Modell verteidigbarer — oder abhängiger?</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="navbtns"><button class="btn btns" onclick="gp(1)">← Zurück</button><button class="btn btnp" onclick="gp(3)">Zum Canvas →</button></div>
+</div>
+
+<!-- ════════════ PHASE 3: STRATEGISCHER CANVAS ════════════ -->
+<div class="pc" id="pc-3">
+  <div class="pbadge">PHASE 4 · 40 MIN</div>
+  <h2 class="ptitle">Strategischer Canvas</h2>
+  <p class="psub">Euer Team-Diagnose-Werkzeug. Füllt alle 8 Felder aus — das ist die Basis für euren Pitch. Ihr könnt KI zur Recherche nutzen, aber die strategische Bewertung bleibt bei euch.</p>
+
+  <div class="ki-hint"><span class="ki-ico">🤖</span><span><strong>KI-Nutzung empfohlen:</strong> Recherchiert Kennzahlen, Marktanteile und aktuelle Entwicklungen eures Falls mit KI-Werkzeugen. Hinterfragt aber kritisch, was zurückkommt — und bringt eure eigene strategische Bewertung ein.</span></div>
+
+  <div class="prog-wrap" style="margin-top:18px">
+    <div class="prog-top"><span class="prog-lbl">Canvas-Fortschritt</span><span class="prog-val" id="cpv">0 / 8 Felder</span></div>
+    <div class="pbar"><div class="pfill" id="cpb" style="width:0%"></div></div>
+  </div>
+
+  <div style="margin-bottom:14px">
+    <label style="font-family:var(--fm);font-size:9px;letter-spacing:2px;color:var(--txd);text-transform:uppercase;display:block;margin-bottom:6px">Teamname & Fall</label>
+    <input type="text" id="teamname" placeholder="z.B. Team Vinted Bulls" oninput="autoSave()">
+  </div>
+
+  <div class="cf" id="cf1">
+    <div class="cfhd"><div class="cfnum">1</div><div class="cftit">Netzwerktyp</div></div>
+    <div class="cfsub">Welcher Grundtyp liegt vor? Mehrfachauswahl möglich.</div>
+    <div class="typs">
+      <button class="tybtn" onclick="tt(this)">Marktplatz</button>
+      <button class="tybtn" onclick="tt(this)">Interaktionsnetzwerk</button>
+      <button class="tybtn" onclick="tt(this)">Datennetzwerk</button>
+      <button class="tybtn" onclick="tt(this)">Plattform</button>
+    </div>
+    <textarea id="ta1" placeholder="Begründung: Warum dieser Typ? Was sind die Kern-Interaktionen?" oninput="up();autoSave()"></textarea>
+  </div>
+
+  <div class="cf" id="cf2">
+    <div class="cfhd"><div class="cfnum">2</div><div class="cftit">Kernakteure</div></div>
+    <div class="cfsub">Wer sind die relevanten Seiten dieses Netzwerks?</div>
+    <textarea id="ta2" placeholder="z.B. Seite A: Käufer:innen / Seite B: Verkäufer:innen / Dritte: Zahlungsanbieter..." oninput="up();autoSave()"></textarea>
+  </div>
+
+  <div class="cf" id="cf3">
+    <div class="cfhd"><div class="cfnum">3</div><div class="cftit">Tragfähigkeit</div></div>
+    <div class="cfsub">Wo entsteht kritische Masse oder Liquidität? Lokal oder global?</div>
+    <textarea id="ta3" placeholder="Ist das Modell schon tragfähig? Was fehlt noch? Welche Kennzahl würde es zeigen?" oninput="up();autoSave()"></textarea>
+    <div class="srow"><span class="slbl2">Liquidität</span><input type="range" id="sl1" min="1" max="10" value="5" oninput="this.nextElementSibling.textContent=this.value;autoSave()"><span class="sval">5</span></div>
+    <div class="srow"><span class="slbl2">Fragmentierung</span><input type="range" id="sl2" min="1" max="10" value="5" oninput="this.nextElementSibling.textContent=this.value;autoSave()"><span class="sval">5</span></div>
+  </div>
+
+  <div class="cf" id="cf4">
+    <div class="cfhd"><div class="cfnum">4</div><div class="cftit">Hauptengpass</div></div>
+    <div class="cfsub">Wo liegt das größte Wachstumsproblem?</div>
+    <div class="typs">
+      <button class="tybtn" onclick="tt(this)">Zu wenig Nachfrage</button>
+      <button class="tybtn" onclick="tt(this)">Zu wenig Angebot</button>
+      <button class="tybtn" onclick="tt(this)">Zu wenig Aktivität</button>
+      <button class="tybtn" onclick="tt(this)">Zu wenig Vertrauen</button>
+    </div>
+    <textarea id="ta4" placeholder="Warum ist das euer kritischer Engpass? Was wäre der erste Hebel?" oninput="up();autoSave()"></textarea>
+  </div>
+
+  <div class="cf" id="cf5" style="border-color:rgba(255,107,53,.2)">
+    <div class="cfhd"><div class="cfnum" style="color:var(--c2);border-color:var(--c2b);background:var(--c2d)">5</div><div class="cftit" style="color:var(--c2)">Negative Netzwerkeffekte</div></div>
+    <div class="cfsub">Wo kippt Wachstum in Lärm, schlechte Treffer, Spam oder Qualitätsverlust?</div>
+    <textarea id="ta5" placeholder="Konkrete Beispiele: Was genau verschlechtert sich, wenn das Netzwerk wächst?" oninput="up();autoSave()"></textarea>
+  </div>
+
+  <div class="cf" id="cf6">
+    <div class="cfhd"><div class="cfnum">6</div><div class="cftit">Monetarisierung</div></div>
+    <div class="cfsub">Wofür lässt sich plausibel Geld verlangen? Welche Seite zahlt?</div>
+    <textarea id="ta6" placeholder="Erlösmodell: Transaktionsgebühr? Abonnement? Werbung? Daten? Mehrwert-Dienste?" oninput="up();autoSave()"></textarea>
+  </div>
+
+  <div class="cf" id="cf7" style="border-color:rgba(155,109,255,.2)">
+    <div class="cfhd"><div class="cfnum" style="color:var(--c3);border-color:var(--c3b);background:var(--c3d)">7</div><div class="cftit" style="color:var(--c3)">KI-Verwundbarkeitstest</div></div>
+    <div class="cfsub">Was passiert, wenn KI Entdeckung, Vergleich oder Auswahl übernimmt?</div>
+    <textarea id="ta7" placeholder="Szenario: Ein KI-Agent ersetzt die Nutzerschnittstelle. Was bleibt? Was kollabiert? Was wird stabiler?" oninput="up();autoSave()"></textarea>
+    <div class="srow"><span class="slbl2">KI-Verwundbarkeit</span><input type="range" id="sl3" min="1" max="10" value="5" style="accent-color:var(--c3)" oninput="this.nextElementSibling.textContent=this.value;autoSave()"><span class="sval" style="color:var(--c3)">5</span></div>
+  </div>
+
+  <div class="cf" id="cf8" style="border-color:rgba(255,201,58,.2)">
+    <div class="cfhd"><div class="cfnum" style="color:var(--c4);border-color:var(--c4b);background:var(--c4d)">8</div><div class="cftit" style="color:var(--c4)">Strategische Intervention</div></div>
+    <div class="cfsub">Was wäre euer stärkster strategischer Hebel in den nächsten 12 Monaten?</div>
+    <textarea id="ta8" placeholder="Konkret, mutig, begründet. Was würdet ihr als erstes tun — und warum?" oninput="up();autoSave()"></textarea>
+  </div>
+
+  <div style="display:flex;gap:10px;margin-top:8px;">
+    <button class="btn btnp" style="flex:1" onclick="saveData()">💾 Canvas speichern (JSON)</button>
+    <button class="btn btns" onclick="openPitch()" style="border-color:var(--c3b);color:var(--c3)">🎯 Pitch-Vorschau</button>
+  </div>
+
+  <div class="navbtns"><button class="btn btns" onclick="gp(2)">← Zurück</button><button class="btn btnp" onclick="gp(4)">Pitch-Vorbereitung →</button></div>
+</div>
+
+<!-- ════════════ PHASE 4: PITCH-VORBEREITUNG ════════════ -->
+<div class="pc" id="pc-4">
+  <div class="pbadge">PHASE 5 · 15 MIN</div>
+  <h2 class="ptitle">Pitch-Vorbereitung</h2>
+  <p class="psub">Euer 2-Minuten-Pitch. Hakt jeden Punkt ab, wenn ihr ihn habt. Danach kommt die Pause — und dann pitcht ihr vor dem Plenum.</p>
+
+  <div class="alert al1">
+    <div class="al-lbl">Spielregel</div>
+    Genau <strong>2 Minuten</strong> pro Team. In exakt dieser Reihenfolge. Keine Abweichungen. Keine Folien, kein Scrollen — nur die eine klare Diagnose.
+  </div>
+
+  <div class="prog-wrap">
+    <div class="prog-top"><span class="prog-lbl">Pitch bereit</span><span class="prog-val" id="ppv">0 / 8 Punkte</span></div>
+    <div class="pbar"><div class="pfill" id="ppb" style="width:0%"></div></div>
+  </div>
+
+  <div class="pstep" onclick="tp(this)"><div class="pstep-n">1</div><div><div class="pstep-tit">Unser Fall in einem Satz</div><div class="pstep-desc">Worum geht es? Was ist das Modell? — Maximal 20 Wörter.</div></div></div>
+  <div class="pstep" onclick="tp(this)"><div class="pstep-n">2</div><div><div class="pstep-tit">Unser Netzwerktyp</div><div class="pstep-desc">Marktplatz / Interaktionsnetzwerk / Datennetzwerk / Plattform — und warum.</div></div></div>
+  <div class="pstep" onclick="tp(this)"><div class="pstep-n">3</div><div><div class="pstep-tit">Unser zentrales Tragfähigkeitsproblem</div><div class="pstep-desc">Hat das Modell kritische Masse? Ist es hinreichend fragmentiert? Was fehlt?</div></div></div>
+  <div class="pstep" onclick="tp(this)"><div class="pstep-n">4</div><div><div class="pstep-tit">Unser größter negativer Netzwerkeffekt</div><div class="pstep-desc">Wo droht Wachstum die Qualität zu zerstören? Konkret benennen.</div></div></div>
+  <div class="pstep" onclick="tp(this)"><div class="pstep-n">5</div><div><div class="pstep-tit">Unser Erlösmodell</div><div class="pstep-desc">Wer zahlt wofür? Warum ist das Modell abschöpfbar?</div></div></div>
+  <div class="pstep" onclick="tp(this)"><div class="pstep-n">6</div><div><div class="pstep-tit">Unser KI-Verwundbarkeitstest</div><div class="pstep-desc">Was kollabiert, wenn KI Entdeckung und Auswahl übernimmt? Was bleibt stabil?</div></div></div>
+  <div class="pstep" onclick="tp(this)"><div class="pstep-n">7</div><div><div class="pstep-tit">Unsere strategische Intervention</div><div class="pstep-desc">Der eine Hebel der nächsten 12 Monate. Konkret, mutig, begründet.</div></div></div>
+  <div class="pstep" onclick="tp(this)"><div class="pstep-n">8</div><div><div class="pstep-tit">Investment-Urteil</div><div class="pstep-desc">Ja / Nein / Nur unter Bedingungen — und die eine entscheidende Begründung.</div></div></div>
+
+  <div class="div"></div>
+  <div class="slbl">Euer Investment-Urteil</div>
+  <div class="vbtns">
+    <button class="vbtn vja" id="vja" onclick="sv('ja')"><span class="v-ico">✅</span>JA<div class="v-sub">Investieren</div></button>
+    <button class="vbtn vbe" id="vbe" onclick="sv('bedingt')"><span class="v-ico">⚡</span>NUR UNTER BEDINGUNGEN<div class="v-sub">Bedingt investieren</div></button>
+    <button class="vbtn vne" id="vne" onclick="sv('nein')"><span class="v-ico">🚫</span>NEIN<div class="v-sub">Nicht investieren</div></button>
+  </div>
+  <textarea id="verdict-reason" style="margin-top:12px;min-height:52px" placeholder="Begründung in einem Satz: Warum dieses Urteil?" oninput="autoSave()"></textarea>
+
+  <div class="km" style="margin-top:24px"><p style="font-size:15px"><span>Keine Folienflut.</span> Eine klare Diagnose. Eine klare Intervention.</p></div>
+
+  <div style="display:flex;gap:10px;margin-top:12px;">
+    <button class="btn btnp" style="flex:1" onclick="saveData()">💾 Pitch speichern (JSON)</button>
+    <button class="btn btns" onclick="openPitch()" style="border-color:var(--c3b);color:var(--c3)">🎯 Pitch-Vorschau öffnen</button>
+  </div>
+
+  <div class="navbtns"><button class="btn btns" onclick="gp(3)">← Zurück</button><button class="btn btnp" onclick="gp(5)">→ Zu den Präsentationen</button></div>
+</div>
+
+<!-- ════════════ PHASE 5: PITCH-PRÄSENTATIONEN ════════════ -->
+<div class="pc" id="pc-5">
+  <div class="pbadge-t">PHASE 6 · 25 MIN · NACH DER PAUSE</div>
+  <h2 class="ptitle">Pitch-Präsentationen</h2>
+  <p class="psub">Jedes Team pitcht 2 Minuten. Nutzt den Countdown-Timer hier. Wer pitcht, zeigt den Pitch-Screen über den Button oben — oder spricht frei auf Basis des Canvas.</p>
+
+  <div class="pcount">
+    <div class="pcount-num" id="pcount-num">02:00</div>
+    <div class="pcount-lbl">MINUTEN VERBLEIBEND</div>
+    <div class="pcount-btns">
+      <button class="pcbtn primary" onclick="startCount()">▶ START</button>
+      <button class="pcbtn" onclick="pauseCount()">⏸ PAUSE</button>
+      <button class="pcbtn" onclick="resetCount()">↺ RESET</button>
+    </div>
+  </div>
+
+  <div class="alert al1">
+    <div class="al-lbl">Ablauf</div>
+    <strong>Reihenfolge der Pitches:</strong> Wenn zwei Teams denselben Fall haben, pitcht zuerst die Investitionsthese, dann die Skeptiker-These. Das Plenum hört zu und macht Notizen für den Debrief.
+  </div>
+
+  <div class="slbl">Pitch-Beobachtungsbogen für Zuhörer:innen</div>
+  <div class="g2">
+    <div class="cf">
+      <div class="cfhd"><div class="cfnum">A</div><div class="cftit">Stärkstes Argument</div></div>
+      <textarea placeholder="Was war das überzeugendste Argument des pitchenden Teams?"></textarea>
+    </div>
+    <div class="cf">
+      <div class="cfhd"><div class="cfnum">B</div><div class="cftit">Schwächste Stelle</div></div>
+      <textarea placeholder="Wo hätte das Team tiefer gehen müssen?"></textarea>
+    </div>
+    <div class="cf">
+      <div class="cfhd"><div class="cfnum">C</div><div class="cftit">KI-Einschätzung</div></div>
+      <textarea placeholder="War die KI-Verwundbarkeitsanalyse überzeugend? Was fehlt?"></textarea>
+    </div>
+    <div class="cf">
+      <div class="cfhd"><div class="cfnum">D</div><div class="cftit">Gegenfrage</div></div>
+      <textarea placeholder="Die eine Frage, die ich dem Team stellen würde..."></textarea>
+    </div>
+  </div>
+
+  <div class="km">
+    <p style="font-size:15px">Pitch laden & präsentieren: Nutzt den <span>🎯 Pitch anzeigen</span>-Button oben rechts.<br>Ladet eure gespeicherte JSON-Datei mit 📂 Laden.</p>
+  </div>
+
+  <div class="navbtns"><button class="btn btns" onclick="gp(4)">← Zurück</button><button class="btn btnp" onclick="gp(6)">Debrief →</button></div>
+</div>
+
+<!-- ════════════ PHASE 6: DEBRIEF ════════════ -->
+<div class="pc" id="pc-6">
+  <div class="pbadge">PHASE 7 · 20 MIN</div>
+  <h2 class="ptitle">Debrief im Plenum</h2>
+  <p class="psub">Was haben wir aus den Fällen gelernt? Drei große Fragen für die gemeinsame Auswertung — und die eine Schlussthese.</p>
+
+  <div class="dq">
+    <div class="dqhd"><div class="dqn">01</div><div class="dqq">Welcher Fall hatte die stärksten Netzwerkeffekte, aber die schwächste Verteidigbarkeit — und warum?</div></div>
+    <div class="dqin"><textarea placeholder="Notizen aus der Plenumsdiskussion..."></textarea></div>
+  </div>
+  <div class="dq">
+    <div class="dqhd"><div class="dqn">02</div><div class="dqq">Wo war Tragfähigkeit eher lokal als global — und was bedeutet das für die Skalierbarkeit des Modells?</div></div>
+    <div class="dqin"><textarea placeholder="Notizen aus der Plenumsdiskussion..."></textarea></div>
+  </div>
+  <div class="dq">
+    <div class="dqhd"><div class="dqn">03</div><div class="dqq">Welches Modell bleibt auch dann stark, wenn KI Entdeckung und Auswahl teilweise übernimmt — und warum?</div></div>
+    <div class="dqin"><textarea placeholder="Notizen aus der Plenumsdiskussion..."></textarea></div>
+  </div>
+
+  <div class="div"></div>
+  <div class="alert al3">
+    <div class="al-lbl">Schlussthese</div>
+    Die spannendste Plattformfrage ist heute nicht mehr nur, <strong>ob</strong> ein Modell Netzwerkeffekte hat, sondern <strong>welche davon unter veränderten Schnittstellen noch abschöpfbar und verteidigbar bleiben</strong>.
+    <div style="margin-top:8px;font-family:var(--fm);font-size:9px;color:var(--txd)">Cui, van Esch &amp; Kietzmann (2026). HBR.</div>
+  </div>
+
+  <div class="navbtns"><button class="btn btns" onclick="gp(5)">← Zurück</button><button class="btn btnp" onclick="gp(7)">Literatur →</button></div>
+</div>
+
+<!-- ════════════ PHASE 7: LITERATUR ════════════ -->
+<div class="pc" id="pc-7">
+  <div class="complete">
+    <span class="co-ico">🏆</span>
+    <div class="co-tit">MISSION ACCOMPLISHED</div>
+    <p style="max-width:480px;margin:0 auto;color:var(--txd);font-size:13px;line-height:1.75">Ihr habt einen realen Fall diagnostiziert, ein Erlösmodell bewertet, eine KI-Verwundbarkeit identifiziert und eine klare strategische Empfehlung abgegeben. Das ist angewandte Strategiearbeit.</p>
+  </div>
+
+  <div class="slbl">Literatur</div>
+  <div class="card">
+    <div class="lit">
+      <span class="tag t2" style="display:inline-block;margin-bottom:8px">Klassiker · Zweiseitige Märkte</span>
+      <div class="lit-txt">Armstrong, M. (2006). <em>Competition in two-sided markets.</em> <strong>RAND Journal of Economics, 37(3), 668–691.</strong></div>
+    </div>
+    <div class="lit">
+      <span class="tag t3" style="display:inline-block;margin-bottom:8px">Aktuell 2026 · KI & Plattformen</span>
+      <div class="lit-txt">Cui, Y. G., van Esch, P., &amp; Kietzmann, J. (2026, April 13). <em>How AI Is Threatening Platforms' Revenue Streams.</em> <strong>Harvard Business Review.</strong></div>
+    </div>
+    <div class="lit">
+      <span class="tag t1" style="display:inline-block;margin-bottom:8px">Strategie · Plattformen</span>
+      <div class="lit-txt">McIntyre, D. P., &amp; Srinivasan, A. (2017). <em>Networks, platforms, and strategy: Emerging views and next steps.</em> <strong>Strategic Management Journal, 38(1), 141–160.</strong></div>
+    </div>
+    <div class="lit">
+      <span class="tag t1" style="display:inline-block;margin-bottom:8px">Practitioner · Netzwerkeffekte</span>
+      <div class="lit-txt">
+        Singh, S. (2020). <em>Layering Network Effects: How to Multiply Unfair Advantages.</em> Breadcrumb.vc.<br>
+        Singh, S. (2021). <em>Curation: How to Beat Negative Network Effects.</em> Breadcrumb.vc.<br>
+        Singh, S. (2021). <em>Fragmentation &amp; Network Viability.</em> Breadcrumb.vc.<br>
+        Singh, S. (2021). <em>Measuring Network Effects: Metrics in Context.</em> Breadcrumb.vc.
+      </div>
+    </div>
+    <div class="lit">
+      <span class="tag t2" style="display:inline-block;margin-bottom:8px">Grundlagen · Komplexe Netzwerke</span>
+      <div class="lit-txt">
+        Petzold, T. (2017). <em>Global Knowledge Dynamics and Social Technology.</em> <strong>Basingstoke: Palgrave Macmillan.</strong><br>
+        Watts, D. J., &amp; Strogatz, S. H. (1998). <em>Collective dynamics of "small-world" networks.</em> <strong>Nature, 393(6684), 440–442.</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="navbtns"><button class="btn btns" onclick="gp(6)">← Zurück</button><button class="btn btnp" onclick="gp(0)">↺ Neustart</button></div>
+</div>
+
+</main>
+</div>
+
+<div class="gp"><div class="gpf" id="gpf" style="width:0%"></div></div>
+<div style="position:fixed;bottom:2px;left:270px;right:0;height:26px;background:rgba(6,12,26,.92);border-top:1px solid var(--bo);display:flex;align-items:center;justify-content:center;z-index:99;backdrop-filter:blur(10px);">
+  <span style="font-family:var(--fm);font-size:9px;letter-spacing:2px;color:var(--txd)">DESIGNED BY PROF. THOMAS PETZOLD PH.D. &amp; CLAUDE</span>
+</div>
+
+<script>
+/* ─── NETZWERK-HINTERGRUND ─── */
+const cv=document.getElementById('bgc'),cx=cv.getContext('2d');let ns=[];
+function rs(){cv.width=window.innerWidth;cv.height=window.innerHeight;}
+function init(){ns=[];for(let i=0;i<60;i++)ns.push({x:Math.random()*cv.width,y:Math.random()*cv.height,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,r:Math.random()*2+.7,o:Math.random()*.35+.15});}
+function draw(){cx.clearRect(0,0,cv.width,cv.height);for(let i=0;i<ns.length;i++)for(let j=i+1;j<ns.length;j++){const d=Math.hypot(ns[i].x-ns[j].x,ns[i].y-ns[j].y);if(d<130){cx.strokeStyle=`rgba(62,245,192,${(1-d/130)*.22})`;cx.lineWidth=.4;cx.beginPath();cx.moveTo(ns[i].x,ns[i].y);cx.lineTo(ns[j].x,ns[j].y);cx.stroke();}}ns.forEach(n=>{cx.fillStyle=`rgba(62,245,192,${n.o})`;cx.beginPath();cx.arc(n.x,n.y,n.r,0,Math.PI*2);cx.fill();n.x+=n.vx;n.y+=n.vy;if(n.x<0||n.x>cv.width)n.vx*=-1;if(n.y<0||n.y>cv.height)n.vy*=-1;});requestAnimationFrame(draw);}
+rs();init();draw();window.addEventListener('resize',()=>{rs();init();});
+
+/* ─── HAUPT-TIMER ─── */
+let t0=Date.now(),timerPaused=false,timerEl=document.getElementById('mainTimer');
+setInterval(()=>{if(!timerPaused){const e=Math.floor((Date.now()-t0)/1000);timerEl.textContent=`${String(Math.floor(e/60)).padStart(2,'0')}:${String(e%60).padStart(2,'0')}`;}},500);
+function resetTimer(){if(confirm('Timer zurücksetzen?')){t0=Date.now();}}
+
+/* ─── PHASEN-NAVIGATION ─── */
+let curPhase=0;const done=new Set();
+const phaseNames=['MISSION BRIEFING','FRAMEWORK-DOWNLOAD','FALLAUSWAHL','STRATEGISCHER CANVAS','PITCH-VORBEREITUNG','PITCH-PRÄSENTATIONEN','DEBRIEF IM PLENUM','LITERATUR & ABSCHLUSS'];
+function gp(i){
+  done.add(curPhase);
+  document.querySelectorAll('.pc').forEach((e,n)=>e.classList.toggle('active',n===i));
+  document.querySelectorAll('.phi').forEach((e,n)=>{
+    e.classList.toggle('active',n===i);
+    e.classList.toggle('done',done.has(n)&&n!==i);
+  });
+  curPhase=i;
+  document.getElementById('hphase').innerHTML=`PHASE ${i+1} VON 8<br><em>${phaseNames[i]}</em>`;
+  document.getElementById('gpf').style.width=(i/7*100)+'%';
+  document.getElementById('sb-pfill').style.width=(done.size/8*100)+'%';
+  document.getElementById('sb-pct').textContent=Math.round(done.size/8*100)+'%';
+  document.getElementById('mn').scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ─── FALL AUFKLAPPEN ─── */
+function tc(c){const wasOpen=c.classList.contains('sel');document.querySelectorAll('.cc').forEach(x=>x.classList.remove('sel'));if(!wasOpen)c.classList.add('sel');}
+
+/* ─── TYP-BUTTONS ─── */
+function tt(b){b.classList.toggle('on');autoSave();}
+
+/* ─── PITCH STEPS ─── */
+function tp(s){
+  s.classList.toggle('done');
+  const all=document.querySelectorAll('.pstep'),d=[...all].filter(x=>x.classList.contains('done')).length;
+  document.getElementById('ppv').textContent=`${d} / ${all.length} Punkte`;
+  document.getElementById('ppb').style.width=(d/all.length*100)+'%';
+}
+
+/* ─── VERDICT ─── */
+let verdictVal='';
+function sv(v){
+  verdictVal=v;
+  document.querySelectorAll('.vbtn').forEach(x=>x.classList.remove('on'));
+  document.getElementById('v'+v).classList.add('on');
+  autoSave();
+}
+
+/* ─── CANVAS FORTSCHRITT ─── */
+function up(){
+  const tas=document.querySelectorAll('#pc-3 textarea[id^="ta"]');
+  let f=0;tas.forEach(t=>{if(t.value.trim().length>10)f++;});
+  document.getElementById('cpv').textContent=`${f} / 8 Felder`;
+  document.getElementById('cpb').style.width=(f/8*100)+'%';
+}
+
+/* ─── COUNTDOWN TIMER ─── */
+let cSecs=120,cInt=null,cRunning=false;
+function fmt(s){return`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}
+function startCount(){
+  if(cRunning)return;cRunning=true;
+  cInt=setInterval(()=>{
+    cSecs--;
+    const el=document.getElementById('pcount-num');
+    el.textContent=fmt(cSecs);
+    el.classList.toggle('warn',cSecs<=30);
+    if(cSecs<=0){clearInterval(cInt);cRunning=false;el.textContent='00:00';}
+  },1000);
+}
+function pauseCount(){clearInterval(cInt);cRunning=false;}
+function resetCount(){clearInterval(cInt);cRunning=false;cSecs=120;const el=document.getElementById('pcount-num');el.textContent=fmt(cSecs);el.classList.remove('warn');}
+
+/* ─── DATEN SAMMELN ─── */
+function collectData(){
+  const typs=[...document.querySelectorAll('#cf1 .tybtn.on')].map(b=>b.textContent);
+  const eng=[...document.querySelectorAll('#cf4 .tybtn.on')].map(b=>b.textContent);
+  return{
+    team:document.getElementById('teamname').value||'',
+    types:typs,engpass:eng,
+    ta1:document.getElementById('ta1').value||'',
+    ta2:document.getElementById('ta2').value||'',
+    ta3:document.getElementById('ta3').value||'',
+    ta4:document.getElementById('ta4').value||'',
+    ta5:document.getElementById('ta5').value||'',
+    ta6:document.getElementById('ta6').value||'',
+    ta7:document.getElementById('ta7').value||'',
+    ta8:document.getElementById('ta8').value||'',
+    sl1:document.getElementById('sl1').value,
+    sl2:document.getElementById('sl2').value,
+    sl3:document.getElementById('sl3').value,
+    verdict:verdictVal,
+    verdictReason:document.getElementById('verdict-reason').value||'',
+    savedAt:new Date().toLocaleString('de-DE')
+  };
+}
+
+/* ─── SPEICHERN ─── */
+function saveData(){
+  const data=collectData();
+  const json=JSON.stringify(data,null,2);
+  const teamSlug=(data.team||'pitch').replace(/[^a-z0-9]/gi,'_').toLowerCase();
+  const filename=`strategielab_${teamSlug}.json`;
+  try{
+    const uri='data:text/plain;charset=utf-8,'+encodeURIComponent(json);
+    const a=document.createElement('a');
+    a.href=uri;a.download=filename;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+  }catch(e){showCopyModal(json,filename);}
+}
+function showCopyModal(json,filename){
+  let m=document.getElementById('copyModal');
+  if(!m){
+    m=document.createElement('div');
+    m.id='copyModal';
+    m.style.cssText='position:fixed;inset:0;z-index:2000;background:rgba(6,12,26,.95);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);';
+    m.innerHTML=`<div style="background:#141e35;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:28px;width:560px;max-width:90vw;">
+      <div style="font-family:var(--fm);font-size:9px;letter-spacing:2px;color:var(--c1);margin-bottom:10px;">JSON SPEICHERN</div>
+      <p style="font-size:13px;color:var(--txd);margin-bottom:14px;">Download in dieser Vorschau nicht verfügbar. Kopiert den Text unten und speichert ihn als <strong style="color:var(--tx)">${filename||'pitch.json'}</strong>:</p>
+      <textarea id="copyTA" readonly style="width:100%;height:180px;font-family:var(--fm);font-size:10px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#99afc8;padding:10px;resize:none;"></textarea>
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button onclick="document.getElementById('copyTA').select();document.execCommand('copy');this.textContent='✓ Kopiert!'" style="flex:1;font-family:var(--fh);font-weight:700;font-size:13px;padding:10px;border-radius:8px;border:none;background:var(--c1);color:#060c1a;cursor:pointer;">Kopieren</button>
+        <button onclick="document.getElementById('copyModal').style.display='none'" style="font-family:var(--fh);font-weight:700;font-size:13px;padding:10px 18px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--tx);cursor:pointer;">Schließen</button>
+      </div>
+    </div>`;
+    document.body.appendChild(m);
+  }
+  document.getElementById('copyTA').value=json;
+  m.style.display='flex';
+}
+
+/* ─── LADEN ─── */
+function loadData(inp){
+  const file=inp.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      if(d.team)document.getElementById('teamname').value=d.team;
+      const fields=['ta1','ta2','ta3','ta4','ta5','ta6','ta7','ta8'];
+      fields.forEach(f=>{if(d[f]&&document.getElementById(f))document.getElementById(f).value=d[f];});
+      if(d.sl1){const s=document.getElementById('sl1');s.value=d.sl1;s.nextElementSibling.textContent=d.sl1;}
+      if(d.sl2){const s=document.getElementById('sl2');s.value=d.sl2;s.nextElementSibling.textContent=d.sl2;}
+      if(d.sl3){const s=document.getElementById('sl3');s.value=d.sl3;s.nextElementSibling.textContent=d.sl3;}
+      if(d.types){document.querySelectorAll('#cf1 .tybtn').forEach(b=>{b.classList.toggle('on',d.types.includes(b.textContent));});}
+      if(d.engpass){document.querySelectorAll('#cf4 .tybtn').forEach(b=>{b.classList.toggle('on',d.engpass.includes(b.textContent));});}
+      if(d.verdict){sv(d.verdict);}
+      if(d.verdictReason)document.getElementById('verdict-reason').value=d.verdictReason;
+      up();
+      alert('✓ Daten erfolgreich geladen!');
+    }catch(err){alert('Fehler beim Laden: '+err.message);}
+  };
+  reader.readAsText(file);
+  inp.value='';
+}
+
+/* ─── AUTO-SAVE (localStorage) ─── */
+function autoSave(){
+  try{localStorage.setItem('strategielab_autosave',JSON.stringify(collectData()));}catch(e){}
+}
+// Beim Laden wiederherstellen
+window.addEventListener('load',()=>{
+  try{
+    const saved=localStorage.getItem('strategielab_autosave');
+    if(saved){const d=JSON.parse(saved);if(d.ta1||d.team){/* silent restore */
+      if(d.team)document.getElementById('teamname').value=d.team;
+      ['ta1','ta2','ta3','ta4','ta5','ta6','ta7','ta8'].forEach(f=>{if(d[f]&&document.getElementById(f))document.getElementById(f).value=d[f];});
+      if(d.sl1){const s=document.getElementById('sl1');s.value=d.sl1;s.nextElementSibling.textContent=d.sl1;}
+      if(d.sl2){const s=document.getElementById('sl2');s.value=d.sl2;s.nextElementSibling.textContent=d.sl2;}
+      if(d.sl3){const s=document.getElementById('sl3');s.value=d.sl3;s.nextElementSibling.textContent=d.sl3;}
+      if(d.types)document.querySelectorAll('#cf1 .tybtn').forEach(b=>b.classList.toggle('on',d.types.includes(b.textContent)));
+      if(d.engpass)document.querySelectorAll('#cf4 .tybtn').forEach(b=>b.classList.toggle('on',d.engpass.includes(b.textContent)));
+      if(d.verdict)sv(d.verdict);
+      if(d.verdictReason)document.getElementById('verdict-reason').value=d.verdictReason;
+      up();
+    }}
+  }catch(e){}
+});
+
+/* ─── PITCH OVERLAY ─── */
+const caseNames={
+  'A':'Vinted / Re-Commerce in Europa',
+  'B':'Lieferando / Wolt / lokale Lieferdienste',
+  'C':'LinkedIn im DACH-Arbeitsmarkt',
+  'D':'Campus-App / Hochschulnetzwerk'
+};
+
+function openPitch(){
+  const d=collectData();
+  // Team & Datum
+  document.getElementById('po-teamname').textContent=d.team||'Team';
+  document.getElementById('po-datum').textContent='Strategielab Netzwerkeffekte · '+new Date().toLocaleDateString('de-DE');
+  // Fall-Name aus Team-Feld ableiten oder aus Selektion
+  const selCase=document.querySelector('.cc.sel');
+  const caseLetter=selCase?selCase.querySelector('.cclet').textContent:'—';
+  const caseName=caseNames[caseLetter]||(d.team||'Euer Fall');
+  document.getElementById('po-casename').textContent=caseLetter!=='—'?caseLetter+' · '+caseName:d.team||'—';
+  // Typen
+  const typWrap=document.getElementById('po-types');
+  typWrap.innerHTML='';
+  (d.types||[]).forEach(t=>{const s=document.createElement('span');s.className='tag t1';s.textContent=t;typWrap.appendChild(s);});
+  (d.engpass||[]).forEach(t=>{const s=document.createElement('span');s.className='tag t4';s.textContent=t;typWrap.appendChild(s);});
+  // Grid Felder
+  const fields=[
+    {n:'01',tit:'Kernakteure',val:d.ta2,cls:''},
+    {n:'02',tit:'Tragfähigkeit',val:d.ta3,cls:''},
+    {n:'03',tit:'Hauptengpass',val:d.ta4,cls:''},
+    {n:'04',tit:'Neg. Netzwerkeffekte',val:d.ta5,cls:'danger'},
+    {n:'05',tit:'Monetarisierung',val:d.ta6,cls:''},
+    {n:'06',tit:'KI-Verwundbarkeit',val:d.ta7,cls:'purple'},
+    {n:'07',tit:'Netzwerktyp-Begründung',val:d.ta1,cls:''},
+    {n:'08',tit:'Strategische Intervention',val:d.ta8,cls:'wide'},
+  ];
+  const grid=document.getElementById('po-grid');
+  grid.innerHTML='';
+  fields.forEach(f=>{
+    const div=document.createElement('div');
+    div.className='po-field'+(f.cls?' '+f.cls:'');
+    div.innerHTML=`<div class="po-field-n">CANVAS ${f.n}</div><div class="po-field-tit">${f.tit}</div><div class="po-field-val">${f.val?f.val.substring(0,220)+(f.val.length>220?'…':''):'<span class="po-empty">Nicht ausgefüllt</span>'}</div>`;
+    grid.appendChild(div);
+  });
+  // Urteil
+  const vEl=document.getElementById('po-verdict');
+  vEl.className='po-verdict';
+  const vLabels={ja:'✅ JA — Investieren',bedingt:'⚡ Nur unter Bedingungen',nein:'🚫 NEIN — Nicht investieren'};
+  const vClasses={ja:'v-yes',bedingt:'v-cond',nein:'v-no'};
+  document.getElementById('po-v-val').textContent=vLabels[d.verdict]||'Kein Urteil';
+  document.getElementById('po-v-reason').textContent=d.verdictReason||'Keine Begründung eingetragen.';
+  if(d.verdict)vEl.classList.add(vClasses[d.verdict]);
+  document.getElementById('pitchOverlay').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+function closePitch(){
+  document.getElementById('pitchOverlay').classList.remove('active');
+  document.body.style.overflow='';
+}
+// ESC zum Schließen
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePitch();});
+</script>
+</body>
+</html>
