@@ -314,7 +314,58 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--bo);border-radius:2px;}
 ::-webkit-scrollbar-thumb:hover{background:rgba(62,245,192,.18);}
-</style>
+
+/* HAMBURGER */
+.hburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;border:1px solid var(--bo);border-radius:8px;background:transparent;}
+.hburger span{width:20px;height:2px;background:var(--c1);border-radius:2px;transition:.25s;}
+.hburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.hburger.open span:nth-child(2){opacity:0;}
+.hburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+#sbBackdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:150;backdrop-filter:blur(4px);}
+#sbBackdrop.show{display:block;}
+
+/* MOBILE */
+@media(max-width:720px){
+  .app{grid-template-columns:1fr;grid-template-areas:"hd""mn";}
+  header{padding:0 14px;gap:10px;}
+  .hbrand{font-size:9px;letter-spacing:1.5px;}
+  .hbrand .hdot{display:none;}
+  .hsave{gap:5px;}
+  .hsavebtn{font-size:8px;padding:5px 8px;letter-spacing:.5px;}
+  .hsavebtn span.btn-label{display:none;}
+  .htimer{font-size:17px;}
+  .hphase{display:none;}
+  .hburger{display:flex;}
+  aside{
+    position:fixed;left:0;top:60px;bottom:0;width:270px;
+    z-index:200;transform:translateX(-100%);transition:transform .3s ease;
+  }
+  aside.open{transform:translateX(0);}
+  main{padding:22px 18px 90px;max-width:100%;}
+  .gp,.gfoot{left:0!important;}
+  .mhero{padding:28px 0 22px;}
+  .mtit{font-size:clamp(24px,7vw,40px);}
+  .mstats{gap:20px;flex-wrap:wrap;}
+  .ms-v{font-size:26px;}
+  .g2,.g3,.g4{grid-template-columns:1fr;}
+  .fc{height:190px;}
+  .these-wrap{grid-template-columns:1fr;}
+  .pfg{grid-template-columns:1fr 1fr;}
+  .vbtns{flex-direction:column;}
+  .pcount-num{font-size:54px;}
+  .navbtns{flex-direction:column-reverse;gap:10px;}
+  .navbtns .btn{width:100%;text-align:center;}
+  .ptitle{font-size:24px;}
+  .po-inner{padding:24px 18px;}
+  .po-grid{grid-template-columns:1fr 1fr;}
+  .po-field.wide{grid-column:span 2;}
+  .po-verdict{flex-direction:column;gap:12px;}
+  .po-verdict-val{font-size:20px;}
+  .po-case-name{font-size:clamp(20px,5vw,34px);}
+  .km p{font-size:15px;}
+  .dqhd{flex-direction:column;gap:8px;}
+  .dqn{font-size:18px;}
+}</style>
 </head>
 <body>
 <canvas id="bgc"></canvas>
@@ -344,14 +395,20 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 </div>
 
 <!-- ═══════════ HAUPTAPP ═══════════ -->
+<div id="sbBackdrop" onclick="closeSb()"></div>
 <div class="app">
 <header>
-  <div class="hbrand"><div class="hdot"></div>STRATEGIELAB · NETZWERKEFFEKTE</div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="hburger" id="hburger" onclick="toggleSb()">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="hbrand"><div class="hdot"></div>STRATEGIELAB · NETZWERKEFFEKTE</div>
+  </div>
   <div class="hsave">
     <input type="file" id="loadFile" accept=".json" style="display:none" onchange="loadData(this)">
-    <button class="hsavebtn" onclick="document.getElementById('loadFile').click()">📂 Laden</button>
-    <button class="hsavebtn" onclick="saveData()">💾 Speichern</button>
-    <button class="hsavebtn hi" onclick="openPitch()">🎯 Pitch anzeigen</button>
+    <button class="hsavebtn" onclick="document.getElementById('loadFile').click()">📂 <span class="btn-label">Laden</span></button>
+    <button class="hsavebtn" onclick="saveData()">💾 <span class="btn-label">Speichern</span></button>
+    <button class="hsavebtn hi" onclick="openPitch()">🎯 <span class="btn-label">Pitch anzeigen</span></button>
   </div>
   <div style="display:flex;align-items:center;gap:20px;">
     <div class="htimer" title="Klicken zum Zurücksetzen" id="mainTimer" onclick="resetTimer()">00:00</div>
@@ -908,7 +965,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 </div>
 
 <div class="gp"><div class="gpf" id="gpf" style="width:0%"></div></div>
-<div style="position:fixed;bottom:2px;left:270px;right:0;height:26px;background:rgba(6,12,26,.92);border-top:1px solid var(--bo);display:flex;align-items:center;justify-content:center;z-index:99;backdrop-filter:blur(10px);">
+<div class="gfoot" style="position:fixed;bottom:2px;left:270px;right:0;height:26px;background:rgba(6,12,26,.92);border-top:1px solid var(--bo);display:flex;align-items:center;justify-content:center;z-index:99;backdrop-filter:blur(10px);">
   <span style="font-family:var(--fm);font-size:9px;letter-spacing:2px;color:var(--txd)">DESIGNED BY PROF. THOMAS PETZOLD PH.D. &amp; CLAUDE</span>
 </div>
 
@@ -919,6 +976,21 @@ function rs(){cv.width=window.innerWidth;cv.height=window.innerHeight;}
 function init(){ns=[];for(let i=0;i<60;i++)ns.push({x:Math.random()*cv.width,y:Math.random()*cv.height,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,r:Math.random()*2+.7,o:Math.random()*.35+.15});}
 function draw(){cx.clearRect(0,0,cv.width,cv.height);for(let i=0;i<ns.length;i++)for(let j=i+1;j<ns.length;j++){const d=Math.hypot(ns[i].x-ns[j].x,ns[i].y-ns[j].y);if(d<130){cx.strokeStyle=`rgba(62,245,192,${(1-d/130)*.22})`;cx.lineWidth=.4;cx.beginPath();cx.moveTo(ns[i].x,ns[i].y);cx.lineTo(ns[j].x,ns[j].y);cx.stroke();}}ns.forEach(n=>{cx.fillStyle=`rgba(62,245,192,${n.o})`;cx.beginPath();cx.arc(n.x,n.y,n.r,0,Math.PI*2);cx.fill();n.x+=n.vx;n.y+=n.vy;if(n.x<0||n.x>cv.width)n.vx*=-1;if(n.y<0||n.y>cv.height)n.vy*=-1;});requestAnimationFrame(draw);}
 rs();init();draw();window.addEventListener('resize',()=>{rs();init();});
+
+/* ─── SIDEBAR MOBILE TOGGLE ─── */
+function toggleSb(){
+  const sb=document.querySelector('aside');
+  const bd=document.getElementById('sbBackdrop');
+  const hb=document.getElementById('hburger');
+  sb.classList.toggle('open');
+  bd.classList.toggle('show');
+  hb.classList.toggle('open');
+}
+function closeSb(){
+  document.querySelector('aside').classList.remove('open');
+  document.getElementById('sbBackdrop').classList.remove('show');
+  document.getElementById('hburger').classList.remove('open');
+}
 
 /* ─── HAUPT-TIMER ─── */
 let t0=Date.now(),timerPaused=false,timerEl=document.getElementById('mainTimer');
@@ -941,6 +1013,7 @@ function gp(i){
   document.getElementById('sb-pfill').style.width=(done.size/8*100)+'%';
   document.getElementById('sb-pct').textContent=Math.round(done.size/8*100)+'%';
   document.getElementById('mn').scrollTo({top:0,behavior:'smooth'});
+  if(window.innerWidth<=720)closeSb();
 }
 
 /* ─── FALL AUFKLAPPEN ─── */
